@@ -1,5 +1,3 @@
-# app.py
-
 import os
 import streamlit as st
 from functions import (
@@ -10,26 +8,17 @@ from functions import (
     generate_project_structure,
     suggest_project_names,
     extract_text,
-    # generate_project_files_structure  # Removed import statement
 )
 import tempfile
 import io
 
-# Import for session management and feedback
-from streamlit.runtime.scriptrunner.script_runner import StopException
-
 # For handling feedback storage
-if 'feedback' not in st.session_state:
-    st.session_state['feedback'] = []
+# Removed session state initialization for feedback
 
 def main():
     # Set page configuration
     st.set_page_config(page_title="WorkUp - Project Management Automation", layout="wide")
     st.title("WorkUp - Project Management Automation")
-
-    # Initialize session state for feedback
-    if 'feedback' not in st.session_state:
-        st.session_state.feedback = []
 
     # Sidebar for project configuration and file uploads
     st.sidebar.header("Project Configuration")
@@ -86,8 +75,6 @@ def main():
     )
     other_options = st.sidebar.text_input("Other Project-Specific Options")
     
-    # Centralized Configuration Management is already handled via config.py
-
     st.sidebar.markdown("---")
     st.sidebar.info("Provide project description and team members' expertise either via upload or manual input.")
 
@@ -125,7 +112,6 @@ def main():
             flowchart_placeholder = st.empty()
             structure_placeholder = st.empty()
             naming_placeholder = st.empty()
-            # files_structure_placeholder = st.empty()  # Removed placeholder for project files structure
             
             try:
                 # Workload Distribution
@@ -176,47 +162,16 @@ def main():
                     naming_placeholder.success("Project Names Suggested!")
                     naming_placeholder.subheader("Project Name Suggestions")
                     naming_placeholder.write(naming_response)
-                
-                # Removed Step 6: Generate Dynamic Project Structure
-                # (The corresponding code block has been removed)
-                
-                # Project Naming Feedback
-                feedback = st.text_area("Provide Feedback on the Project Setup:", height=100)
-                if st.button("Submit Feedback", key="submit_feedback_main"):
-                    if feedback.strip():
-                        st.session_state.feedback.append(feedback.strip())
-                        st.success("Thank you for your feedback!")
-                    else:
-                        st.error("Feedback cannot be empty.")
 
             except Exception as e:
                 st.error(f"An unexpected error occurred: {str(e)}")
     
-    # Continuous Interaction Loop with Session Management and Feedback
+    # Continuous Interaction Loop with Session Management
     st.sidebar.markdown("---")
     if st.sidebar.button("Reset Session", key="reset_session"):
         for key in st.session_state.keys():
             del st.session_state[key]
         st.experimental_rerun()
-
-    st.sidebar.subheader("Feedback")
-    st.sidebar.write("Your feedback helps us improve the application.")
-    user_feedback = st.sidebar.text_input("Enter your feedback:")
-    if st.sidebar.button("Submit Feedback", key="submit_feedback_sidebar"):
-        if user_feedback.strip():
-            st.session_state.feedback.append(user_feedback.strip())
-            st.sidebar.success("Thank you for your feedback!")
-        else:
-            st.sidebar.error("Feedback cannot be empty.")
-
-    # Display Feedback (for demonstration purposes; in production, you might store it securely)
-    if st.checkbox("Show Submitted Feedback"):
-        if st.session_state.feedback:
-            st.write("### Submitted Feedback:")
-            for idx, fb in enumerate(st.session_state.feedback, 1):
-                st.write(f"{idx}. {fb}")
-        else:
-            st.write("No feedback submitted yet.")
 
 if __name__ == "__main__":
     main()
