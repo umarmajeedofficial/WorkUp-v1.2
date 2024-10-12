@@ -1,18 +1,17 @@
 # functions/project_files_structure.py
 
 import os
-import shutil
 import tempfile
 import zipfile
 import openai
 from typing import Dict, Any
+from functions import DEFAULT_MODEL_NAME  # Import the default model name from __init__.py
 
-def generate_project_files_structure(client: Any, project_description: str, team_members: list, preferences: Dict[str, Any]) -> bytes:
+def generate_project_files_structure(project_description: str, team_members: list, preferences: Dict[str, Any]) -> bytes:
     """
     Generates a dynamic project folder structure based on the project description, team expertise, and user preferences.
     
     Args:
-        client (Any): The OpenAI client instance.
         project_description (str): Description of the project.
         team_members (list): List of team members with their expertise.
         preferences (Dict[str, Any]): User preferences such as preferred programming language.
@@ -34,8 +33,8 @@ def generate_project_files_structure(client: Any, project_description: str, team
 
         prompt += "\nProvide the folder structure in a tree format."
 
-        response = client.Completion.create(
-            engine=preferences.get('model_name', 'text-davinci-003'),
+        response = openai.Completion.create(
+            engine=preferences.get('model_name', DEFAULT_MODEL_NAME),
             prompt=prompt,
             max_tokens=500,
             temperature=0.5,
@@ -89,6 +88,7 @@ def parse_structure(structure_text: str) -> Dict:
     structure = {}
     stack = []
     previous_indent = -1
+    last_dir = None
 
     for line in structure_text.splitlines():
         if not line.strip():
