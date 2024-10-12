@@ -10,10 +10,18 @@ from functions import (
     extract_text
 )
 
+# For handling feedback storage
+if 'feedback' not in st.session_state:
+    st.session_state['feedback'] = []
+
 def main():
     # Set page configuration
     st.set_page_config(page_title="WorkUp - Project Management Automation", layout="wide")
     st.title("WorkUp - Project Management Automation")
+
+    # Initialize session state for feedback
+    if 'feedback' not in st.session_state:
+        st.session_state.feedback = []
 
     # Sidebar for project configuration and file uploads
     st.sidebar.header("Project Configuration")
@@ -161,12 +169,14 @@ def main():
             except Exception as e:
                 st.error(f"An unexpected error occurred: {str(e)}")
     
-    # Continuous Interaction Loop
-    st.sidebar.markdown("---")
-    if st.sidebar.button("Reset Session", key="reset_session"):
-        for key in st.session_state.keys():
-            del st.session_state[key]
-        st.experimental_rerun()
+    # Display Feedback (for demonstration purposes; in production, you might store it securely)
+    if st.checkbox("Show Submitted Feedback"):
+        if st.session_state.feedback:
+            st.write("### Submitted Feedback:")
+            for idx, fb in enumerate(st.session_state.feedback, 1):
+                st.write(f"{idx}. {fb}")
+        else:
+            st.write("No feedback submitted yet.")
 
 if __name__ == "__main__":
     main()
