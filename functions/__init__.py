@@ -11,4 +11,3 @@ from config import API_KEY, BASE_URL, MODEL_NAME
 from openai import OpenAI
 
 client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
-DEFAULT_MODEL_NAME = MODEL_NAME
