@@ -157,18 +157,8 @@ def main():
                                 mime="image/png"
                             )
                 
-                # Project Structure and Code Generation
-                with st.spinner("Generating project structure and starter code..."):
-                    project_zip = generate_project_structure(assignment_response)
-                    if project_zip:
-                        structure_placeholder.success("Project Structure Generated!")
-                        structure_placeholder.subheader("Download Project Structure")
-                        structure_placeholder.download_button(
-                            label="Download Project Folder",
-                            data=project_zip,
-                            file_name="project_structure.zip",
-                            mime="application/zip"
-                        )
+
+                
                 
                 # Project Naming Suggestions
                 with st.spinner("Generating project name suggestions..."):
