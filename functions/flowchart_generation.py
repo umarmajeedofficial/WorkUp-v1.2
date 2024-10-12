@@ -1,9 +1,4 @@
-import matplotlib.pyplot as plt
-import networkx as nx
-import tempfile
-import streamlit as st
-
-def generate_flowchart(workload_distribution: str) -> str:
+def generate_flowchart(workload_distribution: str, project_workflow: str) -> str:
     try:
         # Parse the workload_distribution to extract tasks and assignments
         tasks = {}
