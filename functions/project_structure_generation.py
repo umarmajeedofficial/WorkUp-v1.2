@@ -1,10 +1,8 @@
-# functions/project_structure_generation.py
-
 import os
 import zipfile
 import tempfile
 import re  # Import regex for sanitizing filenames
-from typing import List
+from typing import Dict
 import streamlit as st
 
 def sanitize_filename(name: str) -> str:
@@ -20,10 +18,10 @@ def sanitize_filename(name: str) -> str:
     # Remove any characters that are not alphanumeric, underscores, or hyphens
     return re.sub(r'[^\w\-]', '_', name)
 
-def generate_project_structure(workload_distribution: str) -> bytes:
+def generate_project_structure(workload_distribution: str, project_description: str, project_deliverables: str) -> bytes:
     try:
         # Parse tasks
-        tasks = {}
+        tasks: Dict[str, str] = {}
         for line in workload_distribution.split('\n'):
             if ':' in line:
                 member, task = line.split(':', 1)
@@ -34,22 +32,53 @@ def generate_project_structure(workload_distribution: str) -> bytes:
             return b""
         
         with tempfile.TemporaryDirectory() as temp_dir:
-            # Create project folders
-            os.makedirs(os.path.join(temp_dir, 'src'), exist_ok=True)
-            os.makedirs(os.path.join(temp_dir, 'tests'), exist_ok=True)
-            os.makedirs(os.path.join(temp_dir, 'docs'), exist_ok=True)
+            # Create project directories
+            os.makedirs(os.path.join(temp_dir, 'project_docs'), exist_ok=True)
+            os.makedirs(os.path.join(temp_dir, 'project_code'), exist_ok=True)
+
+            # Create project description file
+            with open(os.path.join(temp_dir, 'project_docs', 'project_description.txt'), 'w') as f:
+                f.write(project_description)
             
-            # Create starter code files
-            for idx, (member, task) in enumerate(tasks.items(), start=1):
+            # Create deliverables file
+            with open(os.path.join(temp_dir, 'project_docs', 'project_deliverables.txt'), 'w') as f:
+                f.write(project_deliverables)
+
+            # Create task files for each member
+            for member, task in tasks.items():
                 sanitized_member = sanitize_filename(member)
-                filename = f"{idx}_{sanitized_member}.py"
-                filepath = os.path.join(temp_dir, 'src', filename)
+                filepath = os.path.join(temp_dir, 'project_docs', f"{sanitized_member}_tasks.txt")
                 with open(filepath, 'w') as f:
-                    f.write(f"# Starter code for {member}\n\ndef {sanitize_filename(task)}():\n    pass\n")
-            
+                    f.write(f"{member}'s Task: {task}\n")
+
+            # Create starter code files in the project_code directory
+            for idx, member in enumerate(tasks.keys(), start=1):
+                sanitized_member = sanitize_filename(member)
+                code_filename = f"{idx}_{sanitized_member}.py"
+                filepath = os.path.join(temp_dir, 'project_code', code_filename)
+
+                # Simple starter code based on type (frontend/backend)
+                if 'backend' in tasks[sanitized_member].lower():
+                    code_content = (
+                        f"# Starter code for {member}\n"
+                        f"def {sanitized_member}_api():\n"
+                        "    # TODO: Implement the API\n"
+                        "    pass\n"
+                    )
+                else:
+                    code_content = (
+                        f"# Starter code for {member}\n"
+                        f"def {sanitized_member}_component():\n"
+                        "    # TODO: Implement the frontend component\n"
+                        "    pass\n"
+                    )
+
+                with open(filepath, 'w') as f:
+                    f.write(code_content)
+
             # Create requirements.txt
             with open(os.path.join(temp_dir, 'requirements.txt'), 'w') as f:
-                f.write("streamlit\nopenai\n")
+                f.write("streamlit\nopenai\n")  # Add other dependencies as needed
             
             # Zip the project folder
             zip_path = os.path.join(temp_dir, 'project_structure.zip')
