@@ -10,7 +10,7 @@ from functions import (
     generate_project_structure,
     suggest_project_names,
     extract_text,
-    generate_project_files_structure  # Newly imported function
+    # generate_project_files_structure  # Removed import statement
 )
 import tempfile
 import io
@@ -125,7 +125,7 @@ def main():
             flowchart_placeholder = st.empty()
             structure_placeholder = st.empty()
             naming_placeholder = st.empty()
-            files_structure_placeholder = st.empty()  # Placeholder for project files structure
+            # files_structure_placeholder = st.empty()  # Removed placeholder for project files structure
             
             try:
                 # Workload Distribution
@@ -157,8 +157,18 @@ def main():
                                 mime="image/png"
                             )
                 
-
-                
+                # Project Structure and Code Generation
+                with st.spinner("Generating project structure and starter code..."):
+                    project_zip = generate_project_structure(assignment_response)
+                    if project_zip:
+                        structure_placeholder.success("Project Structure Generated!")
+                        structure_placeholder.subheader("Download Project Structure")
+                        structure_placeholder.download_button(
+                            label="Download Project Folder",
+                            data=project_zip,
+                            file_name="project_structure.zip",
+                            mime="application/zip"
+                        )
                 
                 # Project Naming Suggestions
                 with st.spinner("Generating project name suggestions..."):
@@ -167,25 +177,8 @@ def main():
                     naming_placeholder.subheader("Project Name Suggestions")
                     naming_placeholder.write(naming_response)
                 
-                # Step 6: Generate Dynamic Project Structure
-                with st.spinner("Generating dynamic project files structure..."):
-                    zip_bytes = generate_project_files_structure(
-                        client,
-                        project_description,
-                        team_members,
-                        {
-                            "preferred_language": preferred_language,
-                            "model_name": "text-davinci-003"  # You can adjust the model name as needed
-                        }
-                    )
-                    files_structure_placeholder.success("Project Files Structure Generated!")
-                    files_structure_placeholder.subheader("Download Project Files Structure")
-                    files_structure_placeholder.download_button(
-                        label="Download Project Files Structure",
-                        data=zip_bytes,
-                        file_name="project_files_structure.zip",
-                        mime="application/zip"
-                    )
+                # Removed Step 6: Generate Dynamic Project Structure
+                # (The corresponding code block has been removed)
                 
                 # Project Naming Feedback
                 feedback = st.text_area("Provide Feedback on the Project Setup:", height=100)
