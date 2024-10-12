@@ -1,4 +1,5 @@
 import os
+import plotly.graph_objects as go
 import streamlit as st
 from graphviz import Source
 from functions import (
