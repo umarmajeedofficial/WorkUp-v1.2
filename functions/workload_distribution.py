@@ -1,3 +1,5 @@
+# functions/workload_distribution.py
+
 from typing import List, Dict
 from openai import OpenAI, OpenAIError
 from config import MODEL_NAME
@@ -5,12 +7,6 @@ from .utils import extract_text
 
 def get_workload_distribution(client: OpenAI, project_description: str, team_members: List[Dict[str, str]]) -> str:
     try:
-        # Check for empty inputs
-        if not team_members:
-            return "No team members provided for workload distribution."
-        if not project_description:
-            return "No project description provided."
-
         # Construct expertise list
         expertise_list = "\n".join([f"{member['name']}: {member['expertise']}" for member in team_members])
         
@@ -36,13 +32,11 @@ def get_workload_distribution(client: OpenAI, project_description: str, team_mem
         )
 
         # Extract and return the assistant's response
-        if response.choices:
-            message = response.choices[0].message.content
-            return message
-        else:
-            return "No valid response from the assistant."
+        message = response.choices[0].message.content
+        return message
 
     except OpenAIError as e:
         return f"API request failed: {str(e)}"
     except Exception as e:
         return f"An error occurred: {str(e)}"
+
