@@ -3,7 +3,7 @@ import networkx as nx
 import tempfile
 import streamlit as st
 
-def generate_flowchart(workload_distribution: str, project_workflow: str) -> str:
+def generate_flowchart(workload_distribution: str) -> str:
     try:
         # Parse the workload_distribution to extract tasks and assignments
         tasks = {}
@@ -18,8 +18,8 @@ def generate_flowchart(workload_distribution: str, project_workflow: str) -> str
         
         # Create a directed graph
         G = nx.DiGraph()
-        G.add_node('Start')
-        G.add_node('End')
+        G.add_node('Start', label='Start')
+        G.add_node('End', label='End')
 
         # Add tasks and their connections
         prev = 'Start'
