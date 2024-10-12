@@ -1,14 +1,10 @@
-# functions/flowchart_generation.py
-
-import graphviz
-import tempfile  # Add this import
-from typing import Dict
+import matplotlib.pyplot as plt
+import numpy as np
 import streamlit as st
 
-def generate_flowchart(workload_distribution: str, project_workflow: str) -> str:
+def generate_flowchart(workload_distribution: str) -> None:
     try:
-        # Parse the workload_distribution and project_workflow to extract tasks and assignments
-        # For simplicity, assume that workload_distribution contains lines like "Member: Task"
+        # Parse the workload_distribution to extract tasks and assignments
         tasks = {}
         for line in workload_distribution.split('\n'):
             if ':' in line:
@@ -17,32 +13,41 @@ def generate_flowchart(workload_distribution: str, project_workflow: str) -> str
         
         if not tasks:
             st.error("No tasks found to generate a flowchart.")
-            return ""
+            return
         
-        # Create a flowchart
-        dot = graphviz.Digraph(comment='Project Flowchart', format='png')
+        # Create a flowchart using Matplotlib
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.set_xlim(0, 10)
+        ax.set_ylim(0, 10)
         
-        dot.node('Start', 'Project Start')
-        dot.node('End', 'Project End')
-        
-        prev = 'Start'
+        # Create flowchart nodes and edges
+        node_positions = {}
+        node_height = 1  # Height of each node
+
+        # Start node
+        ax.text(5, 9, "Project Start", ha='center', va='center', bbox=dict(facecolor='lightblue', edgecolor='black', boxstyle='round,pad=0.5'))
+        node_positions['Start'] = (5, 9)
+
+        prev_y = 8  # Start position for the first task
         for member, task in tasks.items():
-            # Sanitize member name to create a valid node name
-            node_name = ''.join(e for e in member if e.isalnum() or e == '_')
-            if not node_name:
-                node_name = f"Member_{list(tasks.keys()).index(member)+1}"
-            dot.node(node_name, f"{member}\n{task}")
-            dot.edge(prev, node_name)
-            prev = node_name
-        dot.edge(prev, 'End')
-        
-        # Render the flowchart to a temporary file
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmpfile:
-            dot.render(filename=tmpfile.name, cleanup=True)
-            flowchart_path = tmpfile.name + '.png'
-        
-        return flowchart_path
+            # Set node position
+            node_positions[member] = (5, prev_y)
+            ax.text(5, prev_y, f"{member}\n{task}", ha='center', va='center', bbox=dict(facecolor='lightgreen', edgecolor='black', boxstyle='round,pad=0.5'))
+            prev_y -= node_height
+
+            # Draw edge from the previous node to the current node
+            if member != 'Start':
+                ax.plot([5, 5], [prev_y + node_height, prev_y], color='black')
+
+        # End node
+        ax.text(5, prev_y, "Project End", ha='center', va='center', bbox=dict(facecolor='lightcoral', edgecolor='black', boxstyle='round,pad=0.5'))
+
+        # Turn off the axes
+        ax.axis('off')
+        plt.tight_layout()
+
+        # Show the plot in Streamlit
+        st.pyplot(fig)
 
     except Exception as e:
         st.error(f"Flowchart generation failed: {str(e)}")
-        return ""
