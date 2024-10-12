@@ -1,5 +1,6 @@
 import os
 import streamlit as st
+from graphviz import Source
 from functions import (
     client,
     get_workload_distribution,
