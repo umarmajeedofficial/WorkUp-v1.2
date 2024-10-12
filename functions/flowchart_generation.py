@@ -1,6 +1,7 @@
 # functions/flowchart_generation.py
 
 import graphviz
+import tempfile  # Add this import
 from typing import Dict
 import streamlit as st
 
@@ -14,6 +15,10 @@ def generate_flowchart(workload_distribution: str, project_workflow: str) -> str
                 member, task = line.split(':', 1)
                 tasks[member.strip()] = task.strip()
         
+        if not tasks:
+            st.error("No tasks found to generate a flowchart.")
+            return ""
+        
         # Create a flowchart
         dot = graphviz.Digraph(comment='Project Flowchart', format='png')
         
@@ -22,7 +27,10 @@ def generate_flowchart(workload_distribution: str, project_workflow: str) -> str
         
         prev = 'Start'
         for member, task in tasks.items():
-            node_name = member.replace(" ", "_")
+            # Sanitize member name to create a valid node name
+            node_name = ''.join(e for e in member if e.isalnum() or e == '_')
+            if not node_name:
+                node_name = f"Member_{list(tasks.keys()).index(member)+1}"
             dot.node(node_name, f"{member}\n{task}")
             dot.edge(prev, node_name)
             prev = node_name
@@ -38,4 +46,3 @@ def generate_flowchart(workload_distribution: str, project_workflow: str) -> str
     except Exception as e:
         st.error(f"Flowchart generation failed: {str(e)}")
         return ""
-
