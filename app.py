@@ -29,7 +29,7 @@ def main():
     if 'feedback' not in st.session_state:
         st.session_state.feedback = []
 
-    # Sidebar for team configuration and file uploads
+    # Sidebar for project configuration and file uploads
     st.sidebar.header("Project Configuration")
     
     # File input for project description
@@ -106,7 +106,7 @@ def main():
         st.warning("Please provide team members' information.")
 
     # Button to trigger the task assignment and other functions
-    if st.button("Start Project Setup"):
+    if st.button("Start Project Setup", key="start_project_setup"):
         # Validate inputs
         missing_info = []
         if not project_description.strip():
@@ -176,7 +176,7 @@ def main():
                 
                 # Project Naming Feedback
                 feedback = st.text_area("Provide Feedback on the Project Setup:", height=100)
-                if st.button("Submit Feedback"):
+                if st.button("Submit Feedback", key="submit_feedback_main"):
                     if feedback.strip():
                         st.session_state.feedback.append(feedback.strip())
                         st.success("Thank you for your feedback!")
@@ -188,7 +188,7 @@ def main():
     
     # Continuous Interaction Loop with Session Management and Feedback
     st.sidebar.markdown("---")
-    if st.sidebar.button("Reset Session"):
+    if st.sidebar.button("Reset Session", key="reset_session"):
         for key in st.session_state.keys():
             del st.session_state[key]
         st.experimental_rerun()
@@ -196,7 +196,7 @@ def main():
     st.sidebar.subheader("Feedback")
     st.sidebar.write("Your feedback helps us improve the application.")
     user_feedback = st.sidebar.text_input("Enter your feedback:")
-    if st.sidebar.button("Submit Feedback"):
+    if st.sidebar.button("Submit Feedback", key="submit_feedback_sidebar"):
         if user_feedback.strip():
             st.session_state.feedback.append(user_feedback.strip())
             st.sidebar.success("Thank you for your feedback!")
@@ -214,4 +214,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
