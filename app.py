@@ -8,11 +8,16 @@ from functions import (
     generate_project_structure,
     suggest_project_names,
     extract_text,
-    display_project_table
+    display_project_table  # Import the display function
 )
 import tempfile
 
+# For handling feedback storage
+# if 'feedback' not in st.session_state:
+#     st.session_state['feedback'] = []  # Initializes feedback storage
+
 def main():
+    # Set page configuration
     st.set_page_config(page_title="WorkUp - Project Management Automation", layout="wide")
     st.title("WorkUp - Project Management Automation")
 
@@ -33,21 +38,46 @@ def main():
     if expertise_file:
         expertise_text = extract_text(expertise_file)
         if expertise_text:
-            team_members = [line.strip() for line in expertise_text.splitlines() if line.strip()]
+            # Assuming each team member's expertise is separated by a delimiter, e.g., '---'
+            team_members = []
+            members = expertise_text.split('---')
+            for member in members:
+                lines = member.strip().split('\n')
+                if len(lines) >= 2:
+                    name = lines[0].strip()
+                    expertise = ' '.join(lines[1:]).strip()
+                    team_members.append({"name": name, "expertise": expertise})
             st.sidebar.success("Team members' expertise loaded from file.")
     else:
-        num_team_members = st.sidebar.number_input("Number of Team Members", min_value=1, max_value=20, step=1, value=2)
+        # Manual input for team members
+        num_team_members = st.sidebar.number_input(
+            "Number of Team Members",
+            min_value=1,
+            max_value=20,
+            step=1,
+            value=2,
+            help="Select the number of team members."
+        )
+
         team_members = []
-        for i in range(num_team_members):
-            st.sidebar.subheader(f"Member {i + 1}")
-            name = st.sidebar.text_input(f"Name of Member {i + 1}", key=f"name_{i + 1}")
-            expertise = st.sidebar.text_area(f"Expertise of Member {i + 1}", key=f"expertise_{i + 1}", height=100)
+        for i in range(1, num_team_members + 1):
+            st.sidebar.subheader(f"Member {i}")
+            name = st.sidebar.text_input(f"Name of Member {i}", key=f"name_{i}")
+            expertise = st.sidebar.text_area(f"Expertise of Member {i}", key=f"expertise_{i}", height=100)
             if name and expertise:
                 team_members.append({"name": name.strip(), "expertise": expertise.strip()})
 
-    # Store outputs in session state
-    if 'outputs' not in st.session_state:
-        st.session_state.outputs = {}
+    # User Interface Enhancements: Additional Preferences
+    st.sidebar.subheader("Preferences")
+    preferred_language = st.sidebar.selectbox(
+        "Preferred Programming Language",
+        options=["Python", "JavaScript", "Java", "C++", "Other"],
+        index=0
+    )
+    other_options = st.sidebar.text_input("Other Project-Specific Options")
+
+    st.sidebar.markdown("---")
+    st.sidebar.info("Provide project description and team members' expertise either via upload or manual input.")
 
     # Main area
     st.header("Project Overview")
@@ -66,7 +96,7 @@ def main():
         st.warning("Please provide team members' information.")
 
     # Button to trigger the task assignment and other functions
-    if st.button("Start Project Setup"):
+    if st.button("Start Project Setup", key="start_project_setup"):
         # Validate inputs
         missing_info = []
         if not project_description.strip():
@@ -77,91 +107,112 @@ def main():
         if missing_info:
             st.error(f"Please provide the following missing information: {', '.join(missing_info)}.")
         else:
+            # Initialize placeholders for incremental display
+            assignment_placeholder = st.empty()
+            workflow_placeholder = st.empty()
+            flowchart_placeholder = st.empty()
+            structure_placeholder = st.empty()
+            naming_placeholder = st.empty()
+            table_placeholder = st.empty()  # Placeholder for the project table
+
             try:
                 # Workload Distribution
                 with st.spinner("Assigning tasks based on team expertise..."):
                     assignment_response = get_workload_distribution(client, project_description, team_members)
-                    st.session_state.outputs['assignment_response'] = assignment_response
+                    assignment_placeholder.success("Tasks Assigned Successfully!")
+                    assignment_placeholder.subheader("Task Assignments and Project Summary")
+                    assignment_placeholder.write(assignment_response)
 
                 # Project Workflow
                 with st.spinner("Generating project workflow..."):
                     workflow_response = get_project_workflow(client, project_description)
-                    st.session_state.outputs['workflow_response'] = workflow_response
+                    workflow_placeholder.success("Project Workflow Generated!")
+                    workflow_placeholder.subheader("Project Workflow")
+                    workflow_placeholder.write(workflow_response)
 
                 # Flowchart Generation
                 with st.spinner("Generating flowchart..."):
                     flowchart_path = generate_flowchart(workflow_response)
-                    st.session_state.outputs['flowchart_path'] = flowchart_path
+                    if flowchart_path:
+                        flowchart_placeholder.success("Flowchart Generated!")
+                        flowchart_placeholder.subheader("Project Flowchart")
+                        flowchart_placeholder.image(flowchart_path, use_column_width=True)
+                        with open(flowchart_path, "rb") as img_file:
+                            btn = st.download_button(
+                                label="Download Flowchart",
+                                data=img_file,
+                                file_name="flowchart.png",
+                                mime="image/png"
+                            )
 
                 # Project Structure and Code Generation
                 with st.spinner("Generating project structure and starter code..."):
                     project_zip = generate_project_structure(assignment_response)
-                    st.session_state.outputs['project_zip'] = project_zip
+                    if project_zip:
+                        structure_placeholder.success("Project Structure Generated!")
+                        structure_placeholder.subheader("Download Project Structure")
+                        structure_placeholder.download_button(
+                            label="Download Project Folder",
+                            data=project_zip,
+                            file_name="project_structure.zip",
+                            mime="application/zip"
+                        )
 
                 # Project Naming Suggestions
                 with st.spinner("Generating project name suggestions..."):
                     naming_response = suggest_project_names(client, project_description)
-                    st.session_state.outputs['naming_response'] = naming_response
+                    naming_placeholder.success("Project Names Suggested!")
+                    naming_placeholder.subheader("Project Name Suggestions")
+                    naming_placeholder.write(naming_response)
 
-                # Display outputs
-                display_outputs(st.session_state.outputs)
+                # Parse the assignment_response to extract tasks per member
+                # Assuming `assignment_response` is a string formatted as "Member: Task"
+                team_tasks = []
+                for line in assignment_response.split('\n'):
+                    if ':' in line:
+                        member, task = line.split(':', 1)
+                        team_tasks.append({"name": member.strip(), "task": task.strip()})
+
+                # Display the project table
+                display_project_table(team_tasks)
+
+                # Project Naming Feedback
+                # feedback = st.text_area("Provide Feedback on the Project Setup:", height=100)
+                # if st.button("Submit Feedback", key="submit_feedback_main"):
+                #     if feedback.strip():
+                #         st.session_state.feedback.append(feedback.strip())
+                #         st.success("Thank you for your feedback!")
+                #     else:
+                #         st.error("Feedback cannot be empty.")
 
             except Exception as e:
                 st.error(f"An unexpected error occurred: {str(e)}")
 
-    # Download buttons for various outputs
-    if 'assignment_response' in st.session_state.outputs:
-        st.subheader("Task Assignments and Project Summary")
-        st.write(st.session_state.outputs['assignment_response'])
-        # Download Task Assignments
-        if st.button("Download Task Assignments"):
-            with open("task_assignments.txt", "w") as f:
-                f.write(st.session_state.outputs['assignment_response'])
-            st.download_button("Download", "task_assignments.txt", "text/plain")
+    # Continuous Interaction Loop with Session Management and Feedback
+    st.sidebar.markdown("---")
+    # if st.sidebar.button("Reset Session", key="reset_session"):
+    #     for key in st.session_state.keys():
+    #         del st.session_state[key]
+    #     st.experimental_rerun()
 
-    if 'workflow_response' in st.session_state.outputs:
-        st.subheader("Project Workflow")
-        st.write(st.session_state.outputs['workflow_response'])
-        # Download Workflow
-        if st.button("Download Project Workflow"):
-            with open("project_workflow.txt", "w") as f:
-                f.write(st.session_state.outputs['workflow_response'])
-            st.download_button("Download", "project_workflow.txt", "text/plain")
+    # st.sidebar.subheader("Feedback")
+    # st.sidebar.write("Your feedback helps us improve the application.")
+    # user_feedback = st.sidebar.text_input("Enter your feedback:")
+    # if st.sidebar.button("Submit Feedback", key="submit_feedback_sidebar"):
+    #     if user_feedback.strip():
+    #         st.session_state.feedback.append(user_feedback.strip())
+    #         st.sidebar.success("Thank you for your feedback!")
+    #     else:
+    #         st.sidebar.error("Feedback cannot be empty.")
 
-    if 'flowchart_path' in st.session_state.outputs:
-        st.subheader("Project Flowchart")
-        st.image(st.session_state.outputs['flowchart_path'], use_column_width=True)
-        if st.button("Download Flowchart"):
-            with open(st.session_state.outputs['flowchart_path'], "rb") as img_file:
-                st.download_button("Download Flowchart", img_file, "image/png")
-
-    if 'project_zip' in st.session_state.outputs:
-        st.subheader("Download Project Structure")
-        st.download_button("Download Project Folder", st.session_state.outputs['project_zip'], "application/zip")
-
-    if 'naming_response' in st.session_state.outputs:
-        st.subheader("Project Name Suggestions")
-        st.write(st.session_state.outputs['naming_response'])
-
-def display_outputs(outputs):
-    if 'assignment_response' in outputs:
-        st.success("Tasks Assigned Successfully!")
-        st.write(outputs['assignment_response'])
-
-    if 'workflow_response' in outputs:
-        st.success("Project Workflow Generated!")
-        st.write(outputs['workflow_response'])
-
-    if 'flowchart_path' in outputs:
-        st.success("Flowchart Generated!")
-        st.image(outputs['flowchart_path'], use_column_width=True)
-
-    if 'project_zip' in outputs:
-        st.success("Project Structure Generated!")
-
-    if 'naming_response' in outputs:
-        st.success("Project Names Suggested!")
-        st.write(outputs['naming_response'])
+    # Display Feedback (for demonstration purposes; in production, you might store it securely)
+    # if st.checkbox("Show Submitted Feedback"):
+    #     if st.session_state.feedback:
+    #         st.write("### Submitted Feedback:")
+    #         for idx, fb in enumerate(st.session_state.feedback, 1):
+    #             st.write(f"{idx}. {fb}")
+    #     else:
+    #         st.write("No feedback submitted yet.")
 
 if __name__ == "__main__":
     main()
