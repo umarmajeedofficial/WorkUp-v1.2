@@ -1,5 +1,3 @@
-# functions/project_structure_generation.py
-
 import os
 import zipfile
 import tempfile
@@ -22,9 +20,21 @@ def sanitize_filename(name: str) -> str:
 
 def generate_project_structure(workload_distribution: str) -> bytes:
     try:
-        # Parse tasks
+        # Split the workload distribution into lines
+        lines = workload_distribution.split('\n')
+        
+        # Create project documentation
+        with open('project_description.txt', 'w') as f:
+            f.write("Project Overview:\n")
+            f.write("This project aims to build a state-of-the-art application that utilizes advanced AI technologies.\n\n")
+            f.write("Objectives and Goals:\n")
+            f.write("1. Develop a user-friendly interface.\n")
+            f.write("2. Implement backend services for data processing.\n")
+            f.write("3. Ensure high performance and scalability.\n")
+
+        # Initialize tasks and members
         tasks = {}
-        for line in workload_distribution.split('\n'):
+        for line in lines:
             if ':' in line:
                 member, task = line.split(':', 1)
                 tasks[member.strip()] = task.strip()
@@ -35,22 +45,46 @@ def generate_project_structure(workload_distribution: str) -> bytes:
         
         with tempfile.TemporaryDirectory() as temp_dir:
             # Create project folders
-            os.makedirs(os.path.join(temp_dir, 'src'), exist_ok=True)
-            os.makedirs(os.path.join(temp_dir, 'tests'), exist_ok=True)
-            os.makedirs(os.path.join(temp_dir, 'docs'), exist_ok=True)
+            os.makedirs(os.path.join(temp_dir, 'project_code_structure'), exist_ok=True)
             
-            # Create starter code files
+            # Create project deliverables file
+            with open(os.path.join(temp_dir, 'project_deliverables.txt'), 'w') as f:
+                f.write("Project Deliverables:\n")
+                f.write("1. A fully functional web application.\n")
+                f.write("2. Comprehensive user documentation.\n")
+                f.write("3. Source code with detailed comments.\n")
+            
+            # Create member work distribution files
             for idx, (member, task) in enumerate(tasks.items(), start=1):
                 sanitized_member = sanitize_filename(member)
-                filename = f"{idx}_{sanitized_member}.py"
-                filepath = os.path.join(temp_dir, 'src', filename)
+                filename = f"{sanitized_member}_work.txt"
+                filepath = os.path.join(temp_dir, f"{filename}")
                 with open(filepath, 'w') as f:
-                    f.write(f"# Starter code for {member}\n\ndef {sanitize_filename(task)}():\n    pass\n")
+                    f.write(f"Work assigned to {member}:\n")
+                    f.write(f"{task}\n")
             
+            # Create initial code files based on project type
+            if "backend" in workload_distribution.lower():
+                with open(os.path.join(temp_dir, 'project_code_structure', 'app.py'), 'w') as f:
+                    f.write("# Main application code\n")
+                    f.write("if __name__ == '__main__':\n")
+                    f.write("    pass\n")
+                with open(os.path.join(temp_dir, 'project_code_structure', 'database.py'), 'w') as f:
+                    f.write("# Database connection and models\n")
+                    f.write("def connect_db():\n")
+                    f.write("    pass\n")
+            else:
+                with open(os.path.join(temp_dir, 'project_code_structure', 'index.html'), 'w') as f:
+                    f.write("<!DOCTYPE html>\n<html>\n<head>\n    <title>Project</title>\n</head>\n<body>\n</body>\n</html>\n")
+                with open(os.path.join(temp_dir, 'project_code_structure', 'styles.css'), 'w') as f:
+                    f.write("/* Styles for the project */\n")
+                with open(os.path.join(temp_dir, 'project_code_structure', 'script.js'), 'w') as f:
+                    f.write("// JavaScript code for the project\n")
+
             # Create requirements.txt
-            with open(os.path.join(temp_dir, 'requirements.txt'), 'w') as f:
+            with open(os.path.join(temp_dir, 'project_code_structure', 'requirements.txt'), 'w') as f:
                 f.write("streamlit\nopenai\n")
-            
+
             # Zip the project folder
             zip_path = os.path.join(temp_dir, 'project_structure.zip')
             with zipfile.ZipFile(zip_path, 'w') as zipf:
