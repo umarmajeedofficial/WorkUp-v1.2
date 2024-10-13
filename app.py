@@ -1,5 +1,3 @@
-# app.py
-
 import os
 import streamlit as st
 from functions import (
@@ -12,17 +10,49 @@ from functions import (
     extract_text
 )
 import tempfile
-
-# Import for session management and feedback
-from streamlit.runtime.scriptrunner.script_runner import StopException
+import time
 
 # For handling feedback storage
 if 'feedback' not in st.session_state:
     st.session_state['feedback'] = []
 
+# Define the welcome messages for typing animation
+welcome_messages = [
+    "Welcome to WorkUp!",
+    "How may I assist you?",
+    "What can I do for you?",
+    "Let's make project management easier!",
+    "Ready to automate your project setup?",
+    "Your project management assistant is here!",
+    "Let's get started on your project!",
+    "Transforming project ideas into reality!",
+    "Empowering your team with automation!",
+    "Let's streamline your workflow!"
+]
+
+def typing_animation(messages):
+    """Display a typing animation for the welcome messages."""
+    for message in messages:
+        st.markdown(f"<h3 style='color: #4CAF50;'>{message}</h3>", unsafe_allow_html=True)
+        time.sleep(1)
+
 def main():
     # Set page configuration
     st.set_page_config(page_title="WorkUp - Project Management Automation", layout="wide")
+    
+    # Dark mode toggle
+    if 'dark_mode' not in st.session_state:
+        st.session_state.dark_mode = False
+
+    # Toggle for light/dark theme
+    theme = "light" if not st.session_state.dark_mode else "dark"
+    st.sidebar.title("Theme")
+    if st.sidebar.button("Toggle Dark/Light Theme"):
+        st.session_state.dark_mode = not st.session_state.dark_mode
+
+    # Display typing animation
+    typing_animation(welcome_messages)
+
     st.title("WorkUp - Project Management Automation")
 
     # Initialize session state for feedback
@@ -84,8 +114,6 @@ def main():
     )
     other_options = st.sidebar.text_input("Other Project-Specific Options")
     
-    # Centralized Configuration Management is already handled via config.py
-
     st.sidebar.markdown("---")
     st.sidebar.info("Provide project description and team members' expertise either via upload or manual input.")
 
@@ -129,14 +157,14 @@ def main():
                 with st.spinner("Assigning tasks based on team expertise..."):
                     assignment_response = get_workload_distribution(client, project_description, team_members)
                     assignment_placeholder.success("Tasks Assigned Successfully!")
-                    assignment_placeholder.subheader("Task Assignments and Project Summary")
+                    assignment_placeholder.markdown("### Task Assignments and Project Summary")
                     assignment_placeholder.write(assignment_response)
                 
                 # Project Workflow
                 with st.spinner("Generating project workflow..."):
                     workflow_response = get_project_workflow(client, project_description)
                     workflow_placeholder.success("Project Workflow Generated!")
-                    workflow_placeholder.subheader("Project Workflow")
+                    workflow_placeholder.markdown("### Project Workflow")
                     workflow_placeholder.write(workflow_response)
                 
                 # Flowchart Generation
@@ -144,7 +172,7 @@ def main():
                     flowchart_path = generate_flowchart(assignment_response, workflow_response)
                     if flowchart_path:
                         flowchart_placeholder.success("Flowchart Generated!")
-                        flowchart_placeholder.subheader("Project Flowchart")
+                        flowchart_placeholder.markdown("### Project Flowchart")
                         flowchart_placeholder.image(flowchart_path, use_column_width=True)
                         with open(flowchart_path, "rb") as img_file:
                             btn = st.download_button(
@@ -159,7 +187,7 @@ def main():
                     project_zip = generate_project_structure(assignment_response)
                     if project_zip:
                         structure_placeholder.success("Project Structure Generated!")
-                        structure_placeholder.subheader("Download Project Structure")
+                        structure_placeholder.markdown("### Download Project Structure")
                         structure_placeholder.download_button(
                             label="Download Project Folder",
                             data=project_zip,
@@ -171,7 +199,7 @@ def main():
                 with st.spinner("Generating project name suggestions..."):
                     naming_response = suggest_project_names(client, project_description)
                     naming_placeholder.success("Project Names Suggested!")
-                    naming_placeholder.subheader("Project Name Suggestions")
+                    naming_placeholder.markdown("### Project Name Suggestions")
                     naming_placeholder.write(naming_response)
                 
                 # Project Naming Feedback
@@ -185,14 +213,8 @@ def main():
 
             except Exception as e:
                 st.error(f"An unexpected error occurred: {str(e)}")
-    
-    # Continuous Interaction Loop with Session Management and Feedback
-    st.sidebar.markdown("---")
-    if st.sidebar.button("Reset Session", key="reset_session"):
-        for key in st.session_state.keys():
-            del st.session_state[key]
-        st.experimental_rerun()
 
+    # Display Feedback (for demonstration purposes; in production, you might store it securely)
     st.sidebar.subheader("Feedback")
     st.sidebar.write("Your feedback helps us improve the application.")
     user_feedback = st.sidebar.text_input("Enter your feedback:")
@@ -203,7 +225,7 @@ def main():
         else:
             st.sidebar.error("Feedback cannot be empty.")
 
-    # Display Feedback (for demonstration purposes; in production, you might store it securely)
+    # Show submitted feedback
     if st.checkbox("Show Submitted Feedback"):
         if st.session_state.feedback:
             st.write("### Submitted Feedback:")
