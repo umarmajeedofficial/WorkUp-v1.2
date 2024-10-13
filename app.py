@@ -57,6 +57,7 @@ if 'feedback' not in st.session_state:
     st.session_state['feedback'] = []
 
 def main():
+    display_welcome_messages()
     # Set page configuration
     st.set_page_config(page_title="WorkUp - Project Management Automation", layout="wide")
     st.title("WorkUp - Project Management Automation")
