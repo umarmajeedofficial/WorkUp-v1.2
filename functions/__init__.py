@@ -6,6 +6,7 @@ from .flowchart_generation import generate_flowchart
 from .project_structure_generation import generate_project_structure
 from .project_naming import suggest_project_names
 from .utils import extract_text    
+from .project_table import generate_project_table, display_project_table
 from config import API_KEY, BASE_URL, MODEL_NAME
 from openai import OpenAI
 
