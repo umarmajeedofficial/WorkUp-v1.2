@@ -33,8 +33,10 @@ welcome_messages = [
 def typing_animation(messages):
     """Display a typing animation for the welcome messages."""
     for message in messages:
-        st.markdown(f"<h3 style='color: #4CAF50;'>{message}</h3>", unsafe_allow_html=True)
+        st.markdown(f"<h3 style='color: black; font-size: 16px;'>{message}</h3>", unsafe_allow_html=True)
         time.sleep(1)
+        st.markdown("<h3 style='color: black; font-size: 16px;'> </h3>", unsafe_allow_html=True)  # Clear message
+        time.sleep(0.5)  # Pause before next message
 
 def main():
     # Set page configuration
@@ -47,7 +49,7 @@ def main():
     # Toggle for light/dark theme
     theme = "light" if not st.session_state.dark_mode else "dark"
     st.sidebar.title("Theme")
-    if st.sidebar.button("Toggle Dark/Light Theme"):
+    if st.sidebar.button("Toggle Dark/Light Theme", key="toggle_theme"):
         st.session_state.dark_mode = not st.session_state.dark_mode
 
     # Display typing animation
