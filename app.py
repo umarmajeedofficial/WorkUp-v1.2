@@ -9,7 +9,8 @@ from functions import (
     generate_flowchart,
     generate_project_structure,
     suggest_project_names,
-    extract_text
+    extract_text,
+    display_project_table  # Import the display function
 )
 import tempfile
 
@@ -19,6 +20,7 @@ from streamlit.runtime.scriptrunner.script_runner import StopException
 # For handling feedback storage
 if 'feedback' not in st.session_state:
     st.session_state['feedback'] = []
+
 
 def main():
     # Set page configuration
@@ -31,7 +33,7 @@ def main():
 
     # Sidebar for project configuration and file uploads
     st.sidebar.header("Project Configuration")
-    
+
     # File input for project description
     project_file = st.sidebar.file_uploader("Upload Project Description", type=["pdf", "docx", "txt"])
     if project_file:
@@ -40,7 +42,7 @@ def main():
             st.sidebar.success("Project description loaded from file.")
     else:
         project_description = st.sidebar.text_area("Enter Project Description", height=200)
-    
+
     # File input for teammates' expertise
     expertise_file = st.sidebar.file_uploader("Upload Team Members' Expertise", type=["pdf", "docx", "txt"])
     if expertise_file:
@@ -74,7 +76,7 @@ def main():
             expertise = st.sidebar.text_area(f"Expertise of Member {i}", key=f"expertise_{i}", height=100)
             if name and expertise:
                 team_members.append({"name": name.strip(), "expertise": expertise.strip()})
-    
+
     # User Interface Enhancements: Additional Preferences
     st.sidebar.subheader("Preferences")
     preferred_language = st.sidebar.selectbox(
@@ -83,7 +85,7 @@ def main():
         index=0
     )
     other_options = st.sidebar.text_input("Other Project-Specific Options")
-    
+
     # Centralized Configuration Management is already handled via config.py
 
     st.sidebar.markdown("---")
@@ -91,13 +93,13 @@ def main():
 
     # Main area
     st.header("Project Overview")
-    
+
     if project_description:
         st.subheader("Project Description")
         st.write(project_description)
     else:
         st.warning("Please provide a project description.")
-    
+
     if team_members:
         st.subheader("Team Members")
         for member in team_members:
@@ -113,7 +115,7 @@ def main():
             missing_info.append("Project description")
         if not team_members:
             missing_info.append("Team members' names and expertise")
-        
+
         if missing_info:
             st.error(f"Please provide the following missing information: {', '.join(missing_info)}.")
         else:
@@ -123,7 +125,8 @@ def main():
             flowchart_placeholder = st.empty()
             structure_placeholder = st.empty()
             naming_placeholder = st.empty()
-            
+            table_placeholder = st.empty()  # Placeholder for the project table
+
             try:
                 # Workload Distribution
                 with st.spinner("Assigning tasks based on team expertise..."):
@@ -131,17 +134,17 @@ def main():
                     assignment_placeholder.success("Tasks Assigned Successfully!")
                     assignment_placeholder.subheader("Task Assignments and Project Summary")
                     assignment_placeholder.write(assignment_response)
-                
+
                 # Project Workflow
                 with st.spinner("Generating project workflow..."):
                     workflow_response = get_project_workflow(client, project_description)
                     workflow_placeholder.success("Project Workflow Generated!")
                     workflow_placeholder.subheader("Project Workflow")
                     workflow_placeholder.write(workflow_response)
-                
+
                 # Flowchart Generation
                 with st.spinner("Generating flowchart..."):
-                    flowchart_path = generate_flowchart( workflow_response)
+                    flowchart_path = generate_flowchart(workflow_response)
                     if flowchart_path:
                         flowchart_placeholder.success("Flowchart Generated!")
                         flowchart_placeholder.subheader("Project Flowchart")
@@ -153,7 +156,7 @@ def main():
                                 file_name="flowchart.png",
                                 mime="image/png"
                             )
-                
+
                 # Project Structure and Code Generation
                 with st.spinner("Generating project structure and starter code..."):
                     project_zip = generate_project_structure(assignment_response)
@@ -166,14 +169,25 @@ def main():
                             file_name="project_structure.zip",
                             mime="application/zip"
                         )
-                
+
                 # Project Naming Suggestions
                 with st.spinner("Generating project name suggestions..."):
                     naming_response = suggest_project_names(client, project_description)
                     naming_placeholder.success("Project Names Suggested!")
                     naming_placeholder.subheader("Project Name Suggestions")
                     naming_placeholder.write(naming_response)
-                
+
+                # Parse the assignment_response to extract tasks per member
+                # Assuming `assignment_response` is a string formatted as "Member: Task"
+                team_tasks = []
+                for line in assignment_response.split('\n'):
+                    if ':' in line:
+                        member, task = line.split(':', 1)
+                        team_tasks.append({"name": member.strip(), "task": task.strip()})
+
+                # Display the project table
+                display_project_table(team_tasks)
+
                 # Project Naming Feedback
                 feedback = st.text_area("Provide Feedback on the Project Setup:", height=100)
                 if st.button("Submit Feedback", key="submit_feedback_main"):
@@ -185,7 +199,7 @@ def main():
 
             except Exception as e:
                 st.error(f"An unexpected error occurred: {str(e)}")
-    
+
     # Continuous Interaction Loop with Session Management and Feedback
     st.sidebar.markdown("---")
     if st.sidebar.button("Reset Session", key="reset_session"):
@@ -211,6 +225,7 @@ def main():
                 st.write(f"{idx}. {fb}")
         else:
             st.write("No feedback submitted yet.")
+
 
 if __name__ == "__main__":
     main()
