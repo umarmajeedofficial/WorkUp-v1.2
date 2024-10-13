@@ -16,33 +16,37 @@ from functions import (
 import tempfile
 
 def display_welcome_messages():
-    """Display a typing animation for the welcome messages in a single line."""
-    welcome_messages = [
-        "Welcome to WorkUp!",
-        "How may I assist you?",
-        "What can I do for you?",
-        "Let's make project management easier!",
-        "Ready to automate your project setup?",
-        "Your project management assistant is here!",
-        "Let's get started on your project!",
-        "Transforming project ideas into reality!",
-        "Empowering your team with automation!",
-        "Let's streamline your workflow!"
-    ]
+    """Display a typing animation for the welcome messages."""
+    if 'welcome_messages_displayed' not in st.session_state:
+        st.session_state.welcome_messages_displayed = True
+        
+        welcome_messages = [
+            "Welcome to WorkUp!",
+            "How may I assist you?",
+            "What can I do for you?",
+            "Let's make project management easier!",
+            "Ready to automate your project setup?",
+            "Your project management assistant is here!",
+            "Let's get started on your project!",
+            "Transforming project ideas into reality!",
+            "Empowering your team with automation!",
+            "Let's streamline your workflow!"
+        ]
+        
+        text_placeholder = st.empty()  # Placeholder for the text
+        for message in welcome_messages:
+            # Typing effect
+            for i in range(len(message) + 1):
+                text_placeholder.markdown(f"<h3 style='color: black; font-size: 16px;'>{message[:i]}</h3>", unsafe_allow_html=True)
+                time.sleep(0.1)  # Typing speed
+            time.sleep(1)  # Wait before clearing the message
+            # Clear message
+            text_placeholder.markdown("<h3 style='color: black; font-size: 16px;'> </h3>", unsafe_allow_html=True)
+            time.sleep(0.5)  # Pause before next message
 
-    text_placeholder = st.empty()  # Placeholder for the text
-    # Loop through messages without an infinite loop
-    for message in welcome_messages:
-        for i in range(len(message) + 1):
-            text_placeholder.markdown(f"<h3 style='color: black; font-size: 16px;'>{message[:i]}</h3>", unsafe_allow_html=True)
-            time.sleep(0.1)  # Typing speed
-        time.sleep(1)  # Wait before moving to the next message
-        # Clear message
-        text_placeholder.markdown("<h3 style='color: black; font-size: 16px;'> </h3>", unsafe_allow_html=True)
-        time.sleep(0.5)  # Pause before next message
+        # After displaying all messages, clear the placeholder
+        text_placeholder.empty()
 
-    # After displaying all messages, clear the placeholder
-    text_placeholder.markdown("<h3 style='color: black; font-size: 16px;'> </h3>", unsafe_allow_html=True)
 
 
 
