@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import networkx as nx
 
-def generate_flowchart_matplotlib(assignment_response: str, workflow_response: str) -> None:
+def generate_flowchart(assignment_response: str, workflow_response: str) -> None:
     # Parse the assignment_response to extract tasks and members
     tasks = {}
     for line in assignment_response.strip().split('\n'):
