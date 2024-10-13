@@ -15,8 +15,6 @@ from functions import (
 
 import tempfile
 
-
-
 def display_welcome_messages():
     """Display a typing animation for the welcome messages in a single line."""
     welcome_messages = [
@@ -31,18 +29,21 @@ def display_welcome_messages():
         "Empowering your team with automation!",
         "Let's streamline your workflow!"
     ]
-    
+
     text_placeholder = st.empty()  # Placeholder for the text
-    while True:  # Infinite loop for continuous display
-        for message in welcome_messages:
-            # Typing effect
-            for i in range(len(message) + 1):
-                text_placeholder.markdown(f"<h3 style='color: black; font-size: 16px;'>{message[:i]}</h3>", unsafe_allow_html=True)
-                time.sleep(0.1)  # Typing speed
-            time.sleep(1)  # Wait before clearing the message
-            # Clear message
-            text_placeholder.markdown("<h3 style='color: black; font-size: 16px;'> </h3>", unsafe_allow_html=True)
-            time.sleep(0.5)  # Pause before next message
+    # Loop through messages without an infinite loop
+    for message in welcome_messages:
+        for i in range(len(message) + 1):
+            text_placeholder.markdown(f"<h3 style='color: black; font-size: 16px;'>{message[:i]}</h3>", unsafe_allow_html=True)
+            time.sleep(0.1)  # Typing speed
+        time.sleep(1)  # Wait before moving to the next message
+        # Clear message
+        text_placeholder.markdown("<h3 style='color: black; font-size: 16px;'> </h3>", unsafe_allow_html=True)
+        time.sleep(0.5)  # Pause before next message
+
+    # After displaying all messages, clear the placeholder
+    text_placeholder.markdown("<h3 style='color: black; font-size: 16px;'> </h3>", unsafe_allow_html=True)
+
 
 
 
@@ -57,10 +58,14 @@ if 'feedback' not in st.session_state:
     st.session_state['feedback'] = []
 
 def main():
-    display_welcome_messages()
     # Set page configuration
     st.set_page_config(page_title="WorkUp - Project Management Automation", layout="wide")
     st.title("WorkUp - Project Management Automation")
+
+    # Call the welcome message display function in a separate thread
+    if 'welcome_displayed' not in st.session_state:
+        st.session_state.welcome_displayed = True
+        display_welcome_messages()
 
     # Initialize session state for feedback
     if 'feedback' not in st.session_state:
