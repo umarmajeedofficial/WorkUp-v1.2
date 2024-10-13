@@ -6,3 +6,5 @@ graphviz
 matplotlib
 networkx
 plotly
+flask
+pandas
