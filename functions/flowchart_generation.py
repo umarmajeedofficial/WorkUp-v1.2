@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import tempfile
 import streamlit as st
+import random
 
 def generate_flowchart(workload_distribution: str) -> str:
     try:
@@ -20,21 +21,41 @@ def generate_flowchart(workload_distribution: str) -> str:
         G = nx.DiGraph()
         G.add_node('Start')
         G.add_node('End')
-        
+
         prev = 'Start'
+        colors = []
+        unique_members = list(set(tasks.keys()))
+        member_colors = {member: f"#{random.randint(0, 0xFFFFFF):06x}" for member in unique_members}  # Assign random color for each member
+
         for member, task in tasks.items():
             node_name = ''.join(e for e in member if e.isalnum() or e == '_')
             if not node_name:
-                node_name = f"Member_{list(tasks.keys()).index(member)+1}"
+                node_name = f"Member_{list(tasks.keys()).index(member) + 1}"
             G.add_node(node_name, label=f"{member}\n{task}")
             G.add_edge(prev, node_name)
             prev = node_name
-        G.add_edge(prev, 'End')
+            colors.append(member_colors[member])  # Add color based on member
 
-        # Draw the flowchart
-        pos = nx.spring_layout(G)  # You can change the layout as needed
+        G.add_edge(prev, 'End')
+        colors.append("#d3d3d3")  # Color for 'End' node
+
+        # Choose a better layout for flowcharts
+        pos = nx.shell_layout(G)  # Better layout for a flowchart
+
+        # Draw the flowchart with distinct colors and labels
         plt.figure(figsize=(10, 8))
-        nx.draw(G, pos, with_labels=True, labels=nx.get_node_attributes(G, 'label'), node_size=3000, node_color='lightblue', font_size=10, font_color='black', font_weight='bold', arrows=True)
+        nx.draw(
+            G, pos, 
+            with_labels=True, 
+            labels=nx.get_node_attributes(G, 'label'),
+            node_size=3000, 
+            node_color=colors,  # Apply different colors to members
+            font_size=10, 
+            font_color='black', 
+            font_weight='bold', 
+            arrows=True,
+            edge_color="gray"
+        )
 
         # Save the flowchart to a temporary file
         with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmpfile:
