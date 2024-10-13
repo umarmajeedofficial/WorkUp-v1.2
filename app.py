@@ -132,7 +132,7 @@ def main():
 
                 # Flowchart Generation
                 with st.spinner("Generating flowchart..."):
-                    flowchart_path = generate_flowchart(workflow_response, team_tasks)
+                    flowchart_path = generate_flowchart(workflow_response)
                     if flowchart_path:
                         flowchart_placeholder.success("Flowchart Generated!")
                         flowchart_placeholder.subheader("Project Flowchart")
