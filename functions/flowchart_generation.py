@@ -39,23 +39,27 @@ def generate_flowchart(workload_distribution: str) -> str:
         G.add_edge(prev, 'End')
         colors.append("#d3d3d3")  # Color for 'End' node
 
-        # Choose a better layout for flowcharts
-        pos = nx.shell_layout(G)  # Better layout for a flowchart
+        # Define a shell layout or a spring layout for better flowchart structure
+        pos = nx.spring_layout(G, seed=42)  # Use spring layout for a more natural flow
 
         # Draw the flowchart with distinct colors and labels
         plt.figure(figsize=(10, 8))
         nx.draw(
-            G, pos, 
-            with_labels=True, 
+            G, pos,
+            with_labels=True,
             labels=nx.get_node_attributes(G, 'label'),
-            node_size=3000, 
+            node_size=4000,
             node_color=colors,  # Apply different colors to members
-            font_size=10, 
-            font_color='black', 
-            font_weight='bold', 
+            font_size=10,
+            font_color='black',
+            font_weight='bold',
             arrows=True,
             edge_color="gray"
         )
+
+        # Add title and improve aesthetics
+        plt.title("Workload Distribution Flowchart", fontsize=14)
+        plt.axis('off')  # Hide axes for better presentation
 
         # Save the flowchart to a temporary file
         with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmpfile:
