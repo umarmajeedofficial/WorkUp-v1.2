@@ -31,11 +31,12 @@ welcome_messages = [
 ]
 
 def typing_animation(messages):
-    """Display a typing animation for the welcome messages."""
+    """Display a typing animation for the welcome messages in a single line."""
+    text_placeholder = st.empty()  # Placeholder for the text
     for message in messages:
-        st.markdown(f"<h3 style='color: black; font-size: 16px;'>{message}</h3>", unsafe_allow_html=True)
-        time.sleep(1)
-        st.markdown("<h3 style='color: black; font-size: 16px;'> </h3>", unsafe_allow_html=True)  # Clear message
+        text_placeholder.markdown(f"<h3 style='color: black; font-size: 16px;'>{message}</h3>", unsafe_allow_html=True)
+        time.sleep(1)  # Show each message for a duration
+        text_placeholder.markdown("<h3 style='color: black; font-size: 16px;'> </h3>", unsafe_allow_html=True)  # Clear message
         time.sleep(0.5)  # Pause before next message
 
 def main():
