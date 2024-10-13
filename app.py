@@ -2,7 +2,6 @@
 
 import os
 import streamlit as st
-import time
 from functions import (
     client,
     get_workload_distribution,
@@ -12,47 +11,7 @@ from functions import (
     suggest_project_names,
     extract_text
 )
-
 import tempfile
-
-def display_welcome_messages():
-    """Display a typing animation for the welcome messages."""
-    if 'welcome_messages_displayed' not in st.session_state:
-        st.session_state.welcome_messages_displayed = True
-        
-        welcome_messages = [
-            "Welcome to WorkUp!",
-            "How may I assist you?",
-            "What can I do for you?",
-            "Let's make project management easier!",
-            "Ready to automate your project setup?",
-            "Your project management assistant is here!",
-            "Let's get started on your project!",
-            "Transforming project ideas into reality!",
-            "Empowering your team with automation!",
-            "Let's streamline your workflow!"
-        ]
-        
-        text_placeholder = st.empty()  # Placeholder for the text
-        for message in welcome_messages:
-            # Typing effect
-            for i in range(len(message) + 1):
-                text_placeholder.markdown(f"<h3 style='color: black; font-size: 16px;'>{message[:i]}</h3>", unsafe_allow_html=True)
-                time.sleep(0.1)  # Typing speed
-            time.sleep(1)  # Wait before clearing the message
-            # Clear message
-            text_placeholder.markdown("<h3 style='color: black; font-size: 16px;'> </h3>", unsafe_allow_html=True)
-            time.sleep(0.5)  # Pause before next message
-
-        # After displaying all messages, clear the placeholder
-        text_placeholder.empty()
-
-
-
-
-
-
-
 
 # Import for session management and feedback
 from streamlit.runtime.scriptrunner.script_runner import StopException
@@ -65,11 +24,6 @@ def main():
     # Set page configuration
     st.set_page_config(page_title="WorkUp - Project Management Automation", layout="wide")
     st.title("WorkUp - Project Management Automation")
-
-    # Call the welcome message display function in a separate thread
-    if 'welcome_displayed' not in st.session_state:
-        st.session_state.welcome_displayed = True
-        display_welcome_messages()
 
     # Initialize session state for feedback
     if 'feedback' not in st.session_state:
