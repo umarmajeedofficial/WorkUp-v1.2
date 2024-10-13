@@ -3,8 +3,9 @@ import networkx as nx
 import tempfile
 import streamlit as st
 import random
+from typing import Dict, List
 
-def generate_flowchart(workload_distribution: str) -> str:
+def generate_flowchart(workload_distribution: str, task_details: Dict[str, Dict[str, str]] = None) -> str:
     try:
         # Parse the workload_distribution to extract tasks and assignments
         tasks = {}
@@ -16,7 +17,7 @@ def generate_flowchart(workload_distribution: str) -> str:
         if not tasks:
             st.error("No tasks found to generate a flowchart.")
             return ""
-        
+
         # Create a directed graph
         G = nx.DiGraph()
         G.add_node('Start', label='Start')
@@ -31,7 +32,14 @@ def generate_flowchart(workload_distribution: str) -> str:
             node_name = ''.join(e for e in member if e.isalnum() or e == '_')
             if not node_name:
                 node_name = f"Member_{list(tasks.keys()).index(member) + 1}"
-            G.add_node(node_name, label=f"{member}\n{task}")
+            
+            # Additional task details if provided
+            task_info = task_details.get(member, {})
+            additional_info = ""
+            if task_info:
+                additional_info = f"\nDue: {task_info.get('due_date', 'N/A')}\nPriority: {task_info.get('priority', 'N/A')}"
+                
+            G.add_node(node_name, label=f"{member}\n{task}{additional_info}")
             G.add_edge(prev, node_name)
             prev = node_name
             colors.append(member_colors[member])  # Add color based on member
@@ -40,15 +48,15 @@ def generate_flowchart(workload_distribution: str) -> str:
         colors.append("#d3d3d3")  # Color for 'End' node
 
         # Choose a better layout for flowcharts
-        pos = nx.shell_layout(G)  # Better layout for a flowchart
+        pos = nx.spring_layout(G)  # Better layout for a flowchart
 
         # Draw the flowchart with distinct colors and labels
-        plt.figure(figsize=(10, 8))
+        plt.figure(figsize=(12, 8))
         nx.draw(
             G, pos, 
             with_labels=True, 
             labels=nx.get_node_attributes(G, 'label'),
-            node_size=3000, 
+            node_size=4000, 
             node_color=colors,  # Apply different colors to members
             font_size=10, 
             font_color='black', 
