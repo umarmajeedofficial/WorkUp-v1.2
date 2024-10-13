@@ -19,11 +19,11 @@ def generate_flowchart(workload_distribution: str) -> str:
         
         # Create a directed graph
         G = nx.DiGraph()
-        G.add_node('Start')
-        G.add_node('End')
+        G.add_node('Start', label='Start')
+        G.add_node('End', label='End')
 
         prev = 'Start'
-        colors = []
+        colors = ["#d3d3d3"]  # Color for the Start node
         unique_members = list(set(tasks.keys()))
         member_colors = {member: f"#{random.randint(0, 0xFFFFFF):06x}" for member in unique_members}  # Assign random color for each member
 
